@@ -1,0 +1,571 @@
+main
+
+---
+package com.example.prolab4;
+import java.lang.*;
+import java.io.*;
+import java.util.Random;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) throws IOException {
+        String isim = null;
+        String harf;
+        int secim;
+
+        System.out.print("Yeni bir oyun mu açmak istersiniz ? (Evet:1) : ");
+        Scanner keyboard = new Scanner(System.in);
+        secim = keyboard.nextInt();
+
+        //yeni oyun uzerinden basliyor
+        if (secim == 1) {
+            System.out.print("n gir: ");
+            int i = keyboard.nextInt();
+            while (i != 3 && i != 5 && i != 7) {
+                System.out.println("n degerini tekrar giriniz : ");
+                i = keyboard.nextInt();
+            }
+
+            File f = new File("bilgiler.txt");
+            FileWriter fw = new FileWriter(f);
+
+            //boyut dosyaya yazdiriliyor
+            String yaz1;
+            Scanner scan = new Scanner(System.in);
+            yaz1 = Integer.toString(i);
+            fw.write(yaz1);
+            fw.write("\n");
+
+            OyunTahtasi oyunTahtasi = new OyunTahtasi(i);
+
+            System.out.print("kullanici ismi giriniz: ");
+            isim = keyboard.next();
+
+            //isim dosyaya yazdiriliyor
+            fw.write(isim);
+            fw.write("\n");
+
+            System.out.print("Harf giriniz (girmek istemiyorsanız 9 yazınız): ");
+            harf = keyboard.next();
+            if (!harf.equalsIgnoreCase("X") && !harf.equalsIgnoreCase("O") && !harf.equalsIgnoreCase("9")) {
+                System.out.println("X/O giriniz! : ");
+                harf = keyboard.next();
+            }
+
+            //harf dosyaya yazdiriliyor
+            fw.write(harf);
+            fw.close();
+
+            Oyuncu oyuncu, bilgisayar;
+            if (harf.equalsIgnoreCase("9"))
+                oyuncu = new Oyuncu(true, isim);
+            else
+                oyuncu = new Oyuncu(harf.toUpperCase().charAt(0), true, isim);
+
+            if (oyuncu.karakteriAl() == 'X')
+                bilgisayar = new Oyuncu('O', false, "Bilgisayar");
+            else
+                bilgisayar = new Oyuncu('X', false, "Bilgisayar");
+
+
+            Oyuncu kazanan = null;
+            while (true) {
+                oyunTahtasi.oyunTahtasiniAl();
+                boolean oyuncuGirdi = true;
+                while (oyuncuGirdi)
+                    oyuncuGirdi = !oyunTahtasi.hamleyiYaz(oyuncu.insanOyuncuHamlesiKontrol(), oyuncu.karakteriAl());
+
+                oyunTahtasi.oyunTahtasiniYazdir();
+
+                if (oyunTahtasi.kazanan(oyuncu.karakteriAl())) {
+                    kazanan = oyuncu;
+                    break;
+                }
+
+                System.out.println();
+                oyuncuGirdi = true;
+                while (oyuncuGirdi)
+                    oyuncuGirdi = !oyunTahtasi.hamleyiYaz(bilgisayar.bilgisayarHamlesiUret(oyunTahtasi.oyunTahtasiniAl().length), bilgisayar.karakteriAl());
+
+                oyunTahtasi.oyunTahtasiniYazdir();
+
+                System.out.println("Cikmak icin 0'a basiniz : ");
+                int x = keyboard.nextInt();
+
+                while (x == 0) {
+                    System.out.println("Oyun kaydedildi...");
+                    oyunTahtasi.dosyayayaz();
+                    System.exit(1);
+                }
+
+                if (oyunTahtasi.kazanan(bilgisayar.karakteriAl())) {
+                    kazanan = bilgisayar;
+                    break;
+                }
+
+                if (oyunTahtasi.beraberlikKontrol()) {
+                    System.out.println("Oyunda berabere kalindi. . .");
+                    break;
+                }
+
+            }
+            if (kazanan == null)
+                System.out.println("oyun bitti ");
+            else
+                System.out.println("oyun bitti kazanan " + kazanan.getIsim());
+        }
+        else{
+            //dosyadan oku sonra while al yapıştır
+            System.out.println("Oyun kayitli oyun uzerinden baslatiliyor. . . ");
+            BufferedReader br = new BufferedReader(new FileReader("ornek.txt"));
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                sb.append(System.lineSeparator());
+                line = br.readLine();
+            }
+            String everything = sb.toString();
+            //System.out.println(everything);
+            char[] dizi= new char[everything.length()];
+            int sayac=0;
+            for(int k=0;k<everything.length();k++){
+                if(everything.charAt(k)=='O'){
+
+                    dizi[sayac]=everything.charAt(k);
+                    sayac++;
+                }
+                if(everything.charAt(k)=='*'){
+
+                    dizi[sayac]=everything.charAt(k);
+                    sayac++;
+                }
+                if(everything.charAt(k)=='X'){
+
+                    dizi[sayac]=everything.charAt(k);
+                    sayac++;
+                }
+            }
+
+            System.out.println();
+
+            BufferedReader bg = new BufferedReader(new FileReader("bilgiler.txt"));
+
+
+            StringBuilder bgg = new StringBuilder();
+            String line1 = bg.readLine();
+
+            while (line1 != null) {
+                bgg.append(line1);
+                bgg.append(System.lineSeparator());
+                line1 = bg.readLine();
+            }
+
+            String bilgi = bgg.toString();
+            char[] dizi2;
+            dizi2=bilgi.toCharArray();
+            char boyut2;
+            boyut2=dizi2[0];
+            char harf2;
+            harf2=dizi2[(dizi2.length)-3];
+            char[] isim2= new char[35];
+            int sayac2=0;
+            for (int z=1;z<=dizi2.length-4;z++){
+
+                isim2[sayac2]=dizi2[z];
+                sayac2++;
+
+            }
+            String isim3=String.valueOf(isim2);
+            char[][] matris= new char[boyut2][boyut2];
+            int sayac3=0;
+            int e,d;
+            int s;
+            s = Character.getNumericValue(boyut2);
+
+            for (d=0;d<s;d++) {
+                for (e = 0; e <s; e++) {
+                    //System.out.println(sayac3);
+                    if (sayac3 == dizi.length)
+                        break;
+                    matris[d][e] = dizi[sayac3];
+                    sayac3++;
+                }
+
+            }
+            for (int i = 0; i <s; i++) {
+                for (int j = 0; j <s; j++) {
+                    System.out.print(matris[i][j]);
+                }
+                System.out.println();
+            }
+
+            Oyuncu oyuncu, bilgisayar;
+            boolean insan=true;
+            oyuncu = new Oyuncu(harf2,insan,isim3);
+
+            OyunTahtasi oyunTahtasi = new OyunTahtasi(s);
+            if (harf2 == 'X')
+                bilgisayar = new Oyuncu('O', false, "Bilgisayar");
+            else
+                bilgisayar = new Oyuncu('X', false, "Bilgisayar");
+
+
+            Oyuncu kazanan = null;
+            while (true) {
+                oyunTahtasi.oyunTahtasiniAl(matris);
+                boolean oyuncuGirdi = true;
+                while (oyuncuGirdi)
+                    oyuncuGirdi = !oyunTahtasi.hamleyiYaz(oyuncu.insanOyuncuHamlesiKontrol(harf2), oyuncu.karakteriAl(harf2));
+
+                oyunTahtasi.oyunTahtasiniYazdir(matris,s);
+
+                if (oyunTahtasi.kazanan(oyuncu.karakteriAl())) {
+                    kazanan = oyuncu;
+                    break;
+                }
+
+                System.out.println();
+                oyuncuGirdi = true;
+                while (oyuncuGirdi)
+                    oyuncuGirdi = !oyunTahtasi.hamleyiYaz(bilgisayar.bilgisayarHamlesiUret(oyunTahtasi.oyunTahtasiniAl(matris).length), bilgisayar.karakteriAl());
+
+                oyunTahtasi.oyunTahtasiniYazdir(matris,s);
+
+                System.out.println("Cikmak icin 0'a basiniz : ");
+                int x = keyboard.nextInt();
+
+                while (x == 0) {
+                    System.out.println("Oyun kaydedildi...");
+                    oyunTahtasi.dosyayayaz();
+                    System.exit(1);
+                }
+
+                if (oyunTahtasi.kazanan(bilgisayar.karakteriAl())) {
+                    kazanan = bilgisayar;
+                    break;
+                }
+
+                if (oyunTahtasi.beraberlikKontrol()) {
+                    System.out.println("Oyunda berabere kalindi. . .");
+                    break;
+                }
+
+            }
+            if (kazanan == null)
+                System.out.println("oyun bitti ");
+            else
+                System.out.println("oyun bitti kazanan " + kazanan.getIsim());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+
+    }
+
+    }
+
+--- oyuncu--
+package com.example.prolab4;
+
+import java.util.*;
+
+public class Oyuncu {
+
+
+    private char tip;                     //hangi harfi kullandigini tutan degisken
+    private boolean insan;                     //bilgisayar mi , insan mi?
+    private String isim;          //kullanicinin adini tutan degisken
+
+
+    public Oyuncu() {
+        this.isim = "Oyuncu";
+        this.insan = true;
+        this.tip = 'X';
+    }
+
+    public Oyuncu(String isim) {
+        this.isim = isim;
+        this.insan = true;
+        this.tip = 'X';
+    }
+
+    public Oyuncu(boolean insan, String isim) {
+        this.insan = insan;
+        this.isim = isim;
+        if (insan)
+            this.tip = 'X';
+        else
+            this.tip = 'O';
+    }
+
+    public Oyuncu(char tip, boolean insan, String isim) {
+        this.tip = tip;
+        this.insan = insan;
+        this.isim = isim;
+    }
+
+    char karakteriAl() {
+        return tip;
+    }
+    char karakteriAl(char tip) {
+        return this.tip;
+    }
+
+    boolean oyuncuTurunuAl() {
+        return insan;
+    }
+
+    String bilgisayarHamlesiUret(int boyut) {
+        Random random = new Random();
+        return random.nextInt(boyut) + "-" + random.nextInt(boyut);
+    }
+
+    String insanOyuncuHamlesiKontrol() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("hamle gir (x-y):  ");
+
+
+        /*if(scanner.next()==boyut && scanner.next()>boyut){
+            System.out.println("Hatalı değer!");
+        }*/
+        return scanner.next();
+    }
+    String insanOyuncuHamlesiKontrol(char tip) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("hamle gir (x-y):  ");
+
+        return scanner.next();
+    }
+
+    String oyuncununHamlesiniAl() {
+        return "";
+    }
+
+
+    public String getIsim() {
+        return isim;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--- oyuncu tahtasi---
+
+package com.example.prolab4;
+
+import java.io.*;
+
+public class OyunTahtasi {
+    private int boyut;
+    private char [][] o_t;
+
+    //yapicilar
+    OyunTahtasi(int boyut){
+        this.boyut= boyut;
+        this.o_t = new char[boyut][boyut];
+    }
+    OyunTahtasi(char[][] o_t,int boyut){
+        this.boyut= o_t.length;
+        this.o_t = o_t;
+    }
+
+    //metodlar
+    char[][] oyunTahtasiniAl(){
+        return this.o_t;
+    }
+    char[][] oyunTahtasiniAl(char[][] o_t){
+        return this.o_t;
+    }
+
+    void oyunTahtasiniYazdir(char[][] o_t,int boyut) throws IOException {
+
+
+
+        for(int i=0; i<boyut; i++){
+            for(int j=0; j<boyut; j++){
+                System.out.print(o_t[i][j]);
+            }
+            System.out.println();
+        }
+
+    }
+    void oyunTahtasiniYazdir() throws IOException {
+
+
+
+        for(int i=0; i<boyut; i++){
+            for(int j=0; j<boyut; j++){
+                System.out.print(o_t[i][j]=='\0'?"*":o_t[i][j]);
+            }
+            System.out.println();
+        }
+
+    }
+    boolean hamleyiYaz(String koordinat, char oyuncu){
+        String[] split = koordinat.split("-");
+        return hamleyiYaz(Integer.parseInt(split[0]),Integer.parseInt(split[1]),oyuncu);
+    }
+    boolean hamleyiYaz(char[][] o_t,int koordinatX,int koordinatY, char oyuncu){
+        if(o_t[koordinatX][koordinatY] == '\0'){
+            o_t[koordinatX][koordinatY] = oyuncu;
+            return true;
+        }
+        return false;
+    }
+    boolean hamleyiYaz(int koordinatX,int koordinatY, char oyuncu){
+        if(o_t[koordinatX][koordinatY] == '\0'){
+            o_t[koordinatX][koordinatY] = oyuncu;
+            return true;
+        }
+        return false;
+    }
+
+    boolean kazanan(char tip){
+        for (int i = 0; i <boyut ; i++) {
+            for (int j = 0; j <boyut ; j++) {
+                if(tip != o_t[i][j]){
+                    break;
+                }
+                if (j == boyut-1)
+                    return true;
+            }
+        }
+
+        for (int i = 0; i <boyut ; i++) {
+            for (int j = 0; j <boyut ; j++) {
+                if(tip != o_t[j][i]){
+                    break;
+                }
+                if (j == boyut-1)
+                    return true;
+            }
+        }
+
+        for (int i = 0; i <boyut ; i++) {
+            if(tip != o_t[i][i]){
+                break;
+            }
+            if (i == boyut-1)
+                return true;
+        }
+
+        for (int i = 0; i <boyut ; i++) {
+            if(tip != o_t[boyut-1-i][i]){
+                break;
+            }
+            if (i == boyut-1)
+                return true;
+        }
+
+        return false;
+
+    }
+    boolean kazanan(char[][] o_t,char tip){
+        for (int i = 0; i <boyut ; i++) {
+            for (int j = 0; j <boyut ; j++) {
+                if(tip != o_t[i][j]){
+                    break;
+                }
+                if (j == boyut-1)
+                    return true;
+            }
+        }
+
+        for (int i = 0; i <boyut ; i++) {
+            for (int j = 0; j <boyut ; j++) {
+                if(tip != o_t[j][i]){
+                    break;
+                }
+                if (j == boyut-1)
+                    return true;
+            }
+        }
+
+        for (int i = 0; i <boyut ; i++) {
+            if(tip != o_t[i][i]){
+                break;
+            }
+            if (i == boyut-1)
+                return true;
+        }
+
+        for (int i = 0; i <boyut ; i++) {
+            if(tip != o_t[boyut-1-i][i]){
+                break;
+            }
+            if (i == boyut-1)
+                return true;
+        }
+
+        return false;
+
+    }
+
+    boolean beraberlikKontrol(char[][] o_t){
+        boolean dolu = true;
+        for (int i = 0; i < boyut; i++) {
+            for (int j = 0; j < boyut; j++) {
+                if (o_t[i][j] == '\0')
+                    return false;
+            }
+        }
+        return !kazanan('X') && !kazanan('O');
+    }
+    boolean beraberlikKontrol(){
+        boolean dolu = true;
+        for (int i = 0; i < boyut; i++) {
+            for (int j = 0; j < boyut; j++) {
+                if (o_t[i][j] == '\0')
+                    return false;
+            }
+        }
+        return !kazanan('X') && !kazanan('O');
+    }
+
+    void dosyayayaz() throws IOException {
+        File file = new File("ornek.txt");
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+
+        FileWriter fileWriter = new FileWriter(file, false);
+        BufferedWriter bWriter = new BufferedWriter(fileWriter);
+        for(int i=0; i<boyut; i++){
+            for(int j=0; j<boyut; j++){
+                bWriter.write(o_t[i][j]=='\0'?'*': o_t[i][j]);
+            }
+            bWriter.write("\n");
+        }
+        bWriter.close();
+    }
+
+}
